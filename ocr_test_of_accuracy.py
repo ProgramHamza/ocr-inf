@@ -1,5 +1,11 @@
 from tqdm import tqdm
 
+from PIL import Image
+import numpy as np
+
+
+
+
 
 DATA_DIR = "C:/Users/mhrom/Downloads/data"
 TEST_DATA_FILENAME = DATA_DIR + "/t10k-images.idx3-ubyte"
@@ -11,6 +17,9 @@ TRAIN_LABELS_FILENAME = DATA_DIR + "/train-labels.idx1-ubyte"
 
 def bytes_to_int(b):
     return int.from_bytes(b,'big')
+
+def read_image(path):
+     return np.asarray(Image.open(path).convert('L'))
 
 def read_images(filename,n_max_images):
     images = []
@@ -75,30 +84,31 @@ def knn(X_train, Y_train, X_test, Y_test, k=3):
             for pair in sorted(enumerate(distances), key=lambda x: x[1])]
         k_nearest_indicies = sorted_distances_indices[:k]
         k_nearest_labels = [Y_train[i] for i in k_nearest_indicies]
+        print(f"Sample {sample_idx}: {k_nearest_labels}")
         top_guess = max_frequency(k_nearest_labels)
         y_pred.append(top_guess)
     return y_pred
 
+
+
 def main():
-    X_train = read_images(TRAIN_DATA_FILENAME,2000)
-    X_test = read_images(TEST_DATA_FILENAME,100)
+    X_train = read_images(TRAIN_DATA_FILENAME,10000)
     Y_train = read_labels(TRAIN_LABELS_FILENAME)
     Y_test = read_labels(TEST_LABELS_FILENAME)
+    a = input("Input image path:")
+    X_test = [read_image(a)]
+
+
 
     X_train = extract_features(X_train)
     X_test = extract_features(X_test)
     
-    y_pred = knn(X_train, Y_train, X_test, Y_test, k=3)
+    y_pred = knn(X_train, Y_train, X_test, Y_test,k=3)
     
-    correct_guesses = 0
+    print(y_pred)
 
-    for i in tqdm(range(len(X_test)), desc="Processing", unit="sample"):
-        if y_pred[i] == Y_test[i]:
-            correct_guesses += 1
-    
-    accuracy = correct_guesses / len(X_test) * 100
-    print(accuracy)
 
 
 if __name__ == "__main__":
     main()
+
